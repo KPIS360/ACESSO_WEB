@@ -32,76 +32,106 @@ def apply_login_styles():
                 background-position: center;
             }}
 
-            /* 4º Barra Vermelha e Texto Branco no Botão */
-            .stButton button {{
-                background-color: #FF0000 !important;
-                color: white !important;
-                border: none;
-                height: 3.5em;
-                font-weight: bold;
-                margin-top: 20px;
-            }}
-
-            /* 1º e 3º Texto em Branco para Contraste */
-            .label-text {{
-                color: white !important;
-                font-weight: 500;
-                margin-bottom: -35px;
-                font-size: 16px;
-            }}
-
+            /* 1º Título Branco e Impactante */
             .main-title {{
-                color: white;
-                font-size: 52px;
+                color: white !important;
+                font-size: 58px;
                 font-weight: 800;
                 text-align: center;
                 margin-top: 5vh;
+                margin-bottom: 10px;
+                text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
             }}
 
-            /* 4º Posição Empresa Canto Superior Direito */
+            /* 2º Posicionamento da empresa1.jpg (Superior Direito) */
             .empresa-logo {{
                 position: absolute;
-                top: 20px;
-                right: 40px;
-                z-index: 100;
+                top: 15px;
+                right: 35px;
+                z-index: 999;
             }}
-            
-            /* 2º Removendo caixas brancas extras de containers */
-            .stVerticalBlock {{ gap: 0.5rem; }}
+
+            /* 3º e 4º Ajuste Proporcional dos Campos e Botão */
+            .stTextInput > div > div > input {{
+                height: 55px !important;
+                font-size: 18px !important;
+                background-color: rgba(255, 255, 255, 0.95) !important;
+            }}
+
+            /* 5º Botão na cor #ED3237 */
+            .stButton button {{
+                background-color: #ED3237 !important;
+                color: white !important;
+                height: 55px !important;
+                font-size: 20px !important;
+                font-weight: bold !important;
+                border: none !important;
+                border-radius: 10px !important;
+                transition: 0.3s;
+                margin-top: 10px;
+            }}
+            .stButton button:hover {{
+                background-color: #c2282d !important;
+                transform: scale(1.02);
+            }}
+
+            /* Labels em Branco */
+            .label-text {{
+                color: white !important;
+                font-size: 19px;
+                font-weight: 500;
+                margin-bottom: -30px;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            }}
         </style>
     """, unsafe_allow_html=True)
 
-if 'page' not in st.session_state or st.session_state.page == 'login':
+# Lógica de Dados (Simples e Direta)
+def validar_login(user, pwd):
+    try:
+        df_u = pd.read_excel(PATH_DATA / 'usuarios.xlsx')
+        match = df_u[(df_u['email'] == user) & (df_u['senha'].astype(str) == pwd)]
+        return match.iloc[0].to_dict() if not match.empty else None
+    except:
+        return None
+
+# --- RENDERIZAÇÃO ---
+if 'page' not in st.session_state:
+    st.session_state.page = 'login'
+
+if st.session_state.page == 'login':
     apply_login_styles()
 
-    # 5º Incluir imagem empresa1.jpg no canto superior direito
-    emp_base64 = get_base64(PATH_IMG / "empresa1.jpg")
-    if emp_base64:
-        st.markdown(f'<div class="empresa-logo"><img src="data:image/jpg;base64,{emp_base64}" width="130"></div>', unsafe_allow_html=True)
+    # 2º Imagem empresa1.jpg no canto
+    emp_base = get_base64(PATH_IMG / "empresa1.jpg")
+    if emp_base:
+        st.markdown(f'<div class="empresa-logo"><img src="data:image/jpg;base64,{emp_base}" width="160"></div>', unsafe_allow_html=True)
 
-    st.write("##")
-    # 1º e 3º Título em Branco
+    # 1º Título Centralizado
     st.markdown('<h1 class="main-title">Portal CIG 360º | GIROAgro</h1>', unsafe_allow_html=True)
     
-    # Logo.png Centralizada
-    col_l1, col_l2, col_l3 = st.columns([1, 0.4, 1])
-    with col_l2:
-        logo_base64 = get_base64(PATH_IMG / "logo.png")
-        if logo_base64:
-            st.image(f"data:image/png;base64,{logo_base64}", use_container_width=True)
+    # Logo Central
+    c1, c2, c3 = st.columns([1, 0.35, 1])
+    with c2:
+        logo_base = get_base64(PATH_IMG / "logo.png")
+        if logo_base:
+            st.image(f"data:image/png;base64,{logo_base}", use_container_width=True)
 
-    # Área de Login
-    _, col_login, _ = st.columns([1, 1, 1])
-    with col_login:
+    # 3º e 4º Formulário Proporcional
+    _, col_form, _ = st.columns([1, 1, 1]) # Coluna central maior para proporcionalidade
+    with col_form:
         st.write("##")
-        
-        # Observação: Subtítulos específicos em branco
         st.markdown('<p class="label-text">E-mail Corporativo:</p>', unsafe_allow_html=True)
-        email = st.text_input("", placeholder="usuario@giroagro.com.br", key="email_input")
+        email_input = st.text_input("", placeholder="usuario@giroagro.com.br", key="email")
         
         st.markdown('<p class="label-text">Senha:</p>', unsafe_allow_html=True)
-        senha = st.text_input("", type="password", placeholder="Digite sua senha", key="pass_input")
+        senha_input = st.text_input("", type="password", placeholder="••••••••", key="senha")
         
         if st.button("ACESSAR PORTAL", use_container_width=True):
-            # Lógica de autenticação aqui
-            pass
+            user_data = validar_login(email_input, senha_input)
+            if user_data:
+                st.session_state.user_info = user_data
+                st.session_state.page = 'menu'
+                st.rerun()
+            else:
+                st.error("Credenciais inválidas. Tente novamente.")
