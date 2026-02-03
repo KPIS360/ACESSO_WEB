@@ -1,0 +1,25 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+env/
+
+# --- Streamlit ---
+.streamlit/
+
+# --- Microsoft Excel (Arquivos Temporários) ---
+# O Excel cria arquivos ocultos que começam com ~$ quando o arquivo está aberto.
+# É CRITICAL ignorar isso para não travar o servidor de deploy.
+~$*.xlsx
+~$*.xls
+
+# --- CORE / DATA ---
+# IMPORTANTE: 
+# Se você deseja que os arquivos Excel de estrutura (modelos) subam ao GitHub,
+# NÃO inclua as linhas abaixo. 
+# Se você for usar um Banco de Dados externo e não quiser que seus dados
+# locais subam por segurança, você deve ignorar os .xlsx
+
+# CORE/logs_acesso.xlsx  # Descomente se não quiser subir seus logs reais
