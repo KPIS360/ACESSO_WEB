@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 
 # ==============================================================================
-# 1. CONFIGURAÇÕES DE CAMINHOS E SEGURANÇA
+# 1. CONFIGURAÇÕES DE CAMINHOS
 # ==============================================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 PATH_DATA = BASE_DIR / "data"
@@ -16,7 +16,6 @@ PATH_IMG = BASE_DIR / "assets"
 
 st.set_page_config(page_title="Portal CIG 360", layout="wide", initial_sidebar_state="collapsed")
 
-# Inicialização segura do Session State
 if 'page' not in st.session_state:
     st.session_state.page = 'login'
 
@@ -56,7 +55,7 @@ def registrar_log(usuario, email, evento):
     except: pass
 
 # ==============================================================================
-# 3. ESTILIZAÇÃO CSS (TELAS 1 E 2)
+# 3. ESTILIZAÇÃO CSS
 # ==============================================================================
 def apply_styles():
     st.markdown("""
@@ -73,8 +72,9 @@ def apply_styles():
                 color: #000000 !important; font-size: 19px; font-weight: 500; 
                 margin-top: 15px; margin-bottom: 5px; display: block;
             }
+            /* RESTAURADO: Cor original do botão da Tela 1 */
             .btn-acessar button {
-                background-color: #ED3237 !important; color: white !important;
+                background-color: #1e3a8a !important; color: white !important;
                 height: 55px !important; font-size: 20px !important; font-weight: bold !important;
                 border-radius: 10px !important; border: none !important; margin-top: 20px;
             }
@@ -100,10 +100,10 @@ def apply_styles():
             .report-card-lovable:hover {
                 transform: translateY(-5px);
                 box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                border-color: #ED3237;
+                border-color: #1e3a8a;
             }
             
-            /* Botão Sair Customizado */
+            /* Botão Sair Customizado (F0F2F6 e Texto Preto) */
             div[data-testid="stBaseButton-secondary"] {
                 background-color: #F0F2F6 !important;
                 color: #000000 !important;
@@ -121,9 +121,9 @@ apply_styles()
 
 # --- TELA 1: LOGIN ---
 if st.session_state.page == 'login':
-    # Logo Empresa reduzida (110px conforme pedido)
     emp_base = get_base64(PATH_IMG / "empresa1.jpg")
     if emp_base:
+        # Reduzida mais 20% conforme pedido anterior
         st.markdown(f'<div class="empresa-logo"><img src="data:image/jpg;base64,{emp_base}" width="110"></div>', unsafe_allow_html=True)
 
     st.markdown('<h1 class="main-title-login">Portal CIG 360º | GIROAgro</h1>', unsafe_allow_html=True)
@@ -159,7 +159,6 @@ if st.session_state.page == 'login':
 
 # --- TELA 2: MENU (LISTA LOVABLE) ---
 elif st.session_state.page == 'menu':
-    # Barra Superior
     col_welcome, col_exit = st.columns([6, 1])
     with col_welcome:
         st.markdown(f"<h2 style='color: #1E293B; padding-left: 20px;'>Olá, {st.session_state.user_info['nome']}</h2>", unsafe_allow_html=True)
@@ -179,7 +178,6 @@ elif st.session_state.page == 'menu':
             meus_ids = df_rel[df_rel['usuario_id'] == st.session_state.user_info['usuario_id']]
             meus_relatorios = pd.merge(meus_ids[['relatorio_id']], df_r, on='relatorio_id', how='inner')
             
-            # Grid de Relatórios
             grid_cols = st.columns(3)
             for i, (_, row) in enumerate(meus_relatorios.iterrows()):
                 with grid_cols[i % 3]:
