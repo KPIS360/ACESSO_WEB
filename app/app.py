@@ -69,24 +69,13 @@ def apply_styles():
             /* ============================================
                TELA 1: LOGIN 
             ============================================ */
-            .login-container {
-                max-width: 480px;
-                margin: 0 auto;
-                padding: 40px 20px;
-            }
-            
             .main-title-login {
-                color: #1a1a1a !important; 
+                color: #000000 !important; 
                 font-size: 42px; 
                 font-weight: 700;
                 text-align: center; 
-                margin: 30px 0 10px 0;
+                margin: 40px 0 20px 0;
                 letter-spacing: -0.5px;
-            }
-            
-            .logo-container {
-                text-align: center;
-                margin: 40px 0;
             }
             
             .empresa-logo { 
@@ -98,47 +87,46 @@ def apply_styles():
             
             .label-dark { 
                 color: #2d3748 !important; 
-                font-size: 15px; 
+                font-size: 16px; 
                 font-weight: 600; 
-                margin-top: 20px; 
+                margin-top: 24px; 
                 margin-bottom: 8px; 
                 display: block;
             }
             
             /* Inputs da Tela de Login */
             .stTextInput input {
-                border-radius: 8px !important;
+                border-radius: 6px !important;
                 border: 1.5px solid #e2e8f0 !important;
-                padding: 12px 16px !important;
+                padding: 14px 16px !important;
                 font-size: 15px !important;
                 transition: all 0.2s ease !important;
-                background-color: #ffffff !important;
+                background-color: #f8fafc !important;
             }
             
             .stTextInput input:focus {
                 border-color: #ED3237 !important;
                 box-shadow: 0 0 0 3px rgba(237, 50, 55, 0.1) !important;
+                background-color: #ffffff !important;
             }
             
             /* Botão Login (Primary) */
             div[data-testid="stButton"] button[kind="primary"] {
-                background: linear-gradient(135deg, #ED3237 0%, #d42a2f 100%) !important;
+                background-color: #ED3237 !important;
                 color: white !important;
-                height: 52px !important; 
+                height: 50px !important; 
                 font-size: 16px !important; 
-                font-weight: 600 !important;
+                font-weight: 700 !important;
                 border-radius: 8px !important; 
                 border: none !important;
                 width: 100%;
-                box-shadow: 0 4px 12px rgba(237, 50, 55, 0.25) !important;
-                transition: all 0.3s ease !important;
-                letter-spacing: 0.3px;
+                transition: all 0.2s ease !important;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
             }
             
             div[data-testid="stButton"] button[kind="primary"]:hover {
-                background: linear-gradient(135deg, #d42a2f 0%, #c2282d 100%) !important;
-                transform: translateY(-1px);
-                box-shadow: 0 6px 16px rgba(237, 50, 55, 0.35) !important;
+                background-color: #d42a2f !important;
             }
 
             /* ============================================
@@ -351,43 +339,45 @@ if st.session_state.page == 'login':
     if emp_base:
         st.markdown(f'<div class="empresa-logo"><img src="data:image/jpg;base64,{emp_base}" width="100"></div>', unsafe_allow_html=True)
 
-    # Container centralizado
-    st.markdown('<div class="login-container">', unsafe_allow_html=True)
-    
     # Título
     st.markdown('<h1 class="main-title-login">Portal CIG 360º | GIROAgro</h1>', unsafe_allow_html=True)
     
-    # Logo CIG 360
-    logo_base = get_base64(PATH_IMG / "logo.png")
-    if logo_base:
-        st.markdown('<div class="logo-container">', unsafe_allow_html=True)
-        st.markdown(f'<img src="data:image/png;base64,{logo_base}" width="280">', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    # Layout: Logo à esquerda + Formulário à direita centralizado
+    col_logo, col_space, col_form, col_space2 = st.columns([1, 0.3, 1.2, 1])
+    
+    # Logo CIG 360 à esquerda
+    with col_logo:
+        st.write("")
+        st.write("")
+        logo_base = get_base64(PATH_IMG / "logo.png")
+        if logo_base:
+            st.image(f"data:image/png;base64,{logo_base}", use_container_width=True)
 
-    # Formulário
-    st.markdown('<label class="label-dark">E-mail Corporativo:</label>', unsafe_allow_html=True)
-    email_in = st.text_input("", placeholder="usuario@giroagro.com.br", key="email", label_visibility="collapsed")
-    
-    st.markdown('<label class="label-dark">Senha:</label>', unsafe_allow_html=True)
-    senha_in = st.text_input("", type="password", placeholder="••••••••", key="senha", label_visibility="collapsed")
-    
-    st.write("")
-    st.write("")
-    
-    # Botão de Login
-    if st.button("ACESSAR PORTAL", type="primary", use_container_width=True):
-        df_u, _, _ = carregar_dados()
-        if df_u is not None:
-            user = df_u[(df_u['email'].str.strip() == email_in.strip()) & (df_u['senha'].astype(str) == senha_in)]
-            if not user.empty:
-                st.session_state.user_info = user.iloc[0].to_dict()
-                st.session_state.page = 'menu'
-                registrar_log(st.session_state.user_info['nome'], email_in, "LOGIN")
-                st.rerun()
-            else:
-                st.error("❌ Credenciais inválidas. Verifique seu e-mail e senha.")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Formulário no centro-direita
+    with col_form:
+        st.write("")
+        st.write("")
+        st.markdown('<label class="label-dark">E-mail Corporativo:</label>', unsafe_allow_html=True)
+        email_in = st.text_input("", placeholder="usuario@giroagro.com.br", key="email", label_visibility="collapsed")
+        
+        st.markdown('<label class="label-dark">Senha:</label>', unsafe_allow_html=True)
+        senha_in = st.text_input("", type="password", placeholder="••••••••", key="senha", label_visibility="collapsed")
+        
+        st.write("")
+        st.write("")
+        
+        # Botão de Login
+        if st.button("ACESSAR PORTAL", type="primary", use_container_width=True):
+            df_u, _, _ = carregar_dados()
+            if df_u is not None:
+                user = df_u[(df_u['email'].str.strip() == email_in.strip()) & (df_u['senha'].astype(str) == senha_in)]
+                if not user.empty:
+                    st.session_state.user_info = user.iloc[0].to_dict()
+                    st.session_state.page = 'menu'
+                    registrar_log(st.session_state.user_info['nome'], email_in, "LOGIN")
+                    st.rerun()
+                else:
+                    st.error("❌ Credenciais inválidas. Verifique seu e-mail e senha.")
 
 # --- TELA 2: LISTA DE RELATÓRIOS ---
 elif st.session_state.page == 'menu':
