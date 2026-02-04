@@ -64,7 +64,7 @@ def apply_styles():
             .block-container {padding: 0rem !important;}
             .stApp { background-color: #FFFFFF; }
             
-            /* --- TELA 1 (LOGIN) --- */
+            /* --- TELA 1 (LOGIN) - MANTIDA --- */
             .main-title-login {
                 color: #000000 !important; font-size: 58px; font-weight: 800;
                 text-align: center; margin-top: 5vh;
@@ -73,7 +73,6 @@ def apply_styles():
                 color: #000000 !important; font-size: 19px; font-weight: 500; 
                 margin-top: 15px; margin-bottom: 5px; display: block;
             }
-            /* Botão Vermelho Restaurado (#ED3237) */
             .btn-acessar button {
                 background-color: #ED3237 !important; color: white !important;
                 height: 55px !important; font-size: 20px !important; font-weight: bold !important;
@@ -81,31 +80,59 @@ def apply_styles():
             }
             .empresa-logo { position: absolute; top: 15px; right: 35px; z-index: 999; }
 
-            /* --- TELA 2 (LISTA LOVABLE) --- */
-            /* Botão Sair */
+            /* --- TELA 2 (LISTA LOVABLE CLEAN) --- */
+            
+            /* Botão Sair - Discreto */
             div[data-testid="stBaseButton-secondary"] {
                 background-color: #F1F5F9 !important; color: #0F172A !important;
                 border: 1px solid #E2E8F0 !important; border-radius: 6px !important;
             }
-            
+
             /* Cabeçalho da Tabela */
-            .lovable-header {
-                font-size: 14px; font-weight: 600; color: #64748B;
-                padding-bottom: 10px; border-bottom: 1px solid #E2E8F0;
+            .table-header {
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                color: #64748B;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding-bottom: 12px;
+                border-bottom: 2px solid #E2E8F0;
                 margin-bottom: 10px;
             }
-            
-            /* Linhas da Tabela */
-            .lovable-row {
-                padding: 15px 0; border-bottom: 1px solid #F1F5F9;
-                display: flex; align-items: center; transition: 0.2s;
+
+            /* Texto do Relatório (Coluna 1) */
+            .report-name {
+                font-family: 'Inter', sans-serif;
+                font-size: 18px; /* Aumentado */
+                font-weight: 500;
+                color: #0F172A;
+                padding: 18px 0;
             }
-            .lovable-text { color: #334155; font-size: 15px; font-weight: 500; }
-            .lovable-sub { color: #64748B; font-size: 14px; }
-            
-            /* Botão Link (Nome do Relatório) */
-            .stButton button {
-                text-align: left; padding-left: 0;
+
+            /* "Botão" Texto (Coluna 2) - Transformando botão em link */
+            .btn-link button {
+                background-color: transparent !important;
+                border: none !important;
+                color: #2563EB !important; /* Azul Link */
+                font-weight: 600 !important;
+                font-size: 16px !important;
+                text-decoration: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin-top: 15px !important; /* Alinhamento visual */
+                display: flex;
+                justify-content: flex-end; /* Alinha a direita */
+            }
+            .btn-link button:hover {
+                color: #1e40af !important;
+                text-decoration: underline !important;
+            }
+
+            /* Linha Divisória Customizada */
+            .divider {
+                border-bottom: 1px solid #F1F5F9;
+                margin: 0;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -153,9 +180,9 @@ if st.session_state.page == 'login':
                     st.error("Credenciais inválidas.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TELA 2: LISTA DE RELATÓRIOS (ESTILO LOVABLE) ---
+# --- TELA 2: LISTA DE RELATÓRIOS (ESTILO TABELA LOVABLE) ---
 elif st.session_state.page == 'menu':
-    # Barra de Boas-vindas
+    # Header com Nome e Sair
     c1, c2 = st.columns([6, 1])
     c1.markdown(f"<h2 style='color: #0F172A; margin:0;'>Olá, {st.session_state.user_info['nome']}</h2>", unsafe_allow_html=True)
     if c2.button("Sair", key="logout_btn", use_container_width=True):
@@ -164,50 +191,41 @@ elif st.session_state.page == 'menu':
 
     st.write("##")
     
-    # Cabeçalho da Tabela (Estilo Lovable Image)
-    # Colunas: Nome (4) | Departamento (2) | Plataforma (2) | Status (1)
+    # Cabeçalho da Lista
+    # Proporção: Nome (5 partes) | Ação (1 parte)
     with st.container():
-        h1, h2, h3, h4 = st.columns([4, 2, 2, 1])
-        h1.markdown('<div class="lovable-header">PAINEL / RELATÓRIO</div>', unsafe_allow_html=True)
-        h2.markdown('<div class="lovable-header">DEPARTAMENTO</div>', unsafe_allow_html=True)
-        h3.markdown('<div class="lovable-header">PLATAFORMA</div>', unsafe_allow_html=True)
-        h4.markdown('<div class="lovable-header">STATUS</div>', unsafe_allow_html=True) # 4ª Coluna Sugerida
+        h1, h2 = st.columns([5, 1])
+        h1.markdown('<div class="table-header">NOME DO RELATÓRIO</div>', unsafe_allow_html=True)
+        h2.markdown('<div class="table-header" style="text-align: right;">AÇÃO</div>', unsafe_allow_html=True)
 
-    # Conteúdo da Lista
+    # Lista de Relatórios
     df_u, df_r, df_rel = carregar_dados()
     if df_rel is not None:
         meus_ids = df_rel[df_rel['usuario_id'] == st.session_state.user_info['usuario_id']]
         meus_relatorios = pd.merge(meus_ids[['relatorio_id']], df_r, on='relatorio_id', how='inner')
 
         for i, (_, row) in enumerate(meus_relatorios.iterrows()):
+            # Container da linha para organização
             with st.container():
-                # Fundo alternado para efeito visual (opcional)
-                bg_style = "background-color: #F8FAFC;" if i % 2 == 0 else "background-color: #FFFFFF;"
+                c_name, c_action = st.columns([5, 1])
                 
-                c1, c2, c3, c4 = st.columns([4, 2, 2, 1])
-                
-                # Coluna 1: Botão Link (Nome) - Ação Principal
-                with c1:
-                    # Usamos um botão transparente que parece texto para ser clicável
-                    if st.button(f"📊 {row['nome_relatorio']}", key=f"lnk_{row['relatorio_id']}"):
+                # Coluna 1: Nome do Relatório (Texto Limpo e Maior)
+                with c_name:
+                    st.markdown(f'<div class="report-name">{row["nome_relatorio"]}</div>', unsafe_allow_html=True)
+
+                # Coluna 2: Ação (Botão disfarçado de Link)
+                with c_action:
+                    st.markdown('<div class="btn-link">', unsafe_allow_html=True)
+                    # O texto do botão é "Abrir Relatório" conforme pedido, mas parece um link azul
+                    if st.button("Abrir Relatório", key=f"lnk_{row['relatorio_id']}"):
                         st.session_state.report_url = row['link']
                         st.session_state.report_name = row['nome_relatorio']
                         st.session_state.page = 'view'
                         st.rerun()
-
-                # Coluna 2: Categoria/Departamento
-                with c2:
-                    st.markdown(f'<div class="lovable-sub" style="padding-top: 10px;">{row["categoria"]}</div>', unsafe_allow_html=True)
-
-                # Coluna 3: Plataforma (Power BI fixo ou vindo do excel se tiver coluna)
-                with c3:
-                    st.markdown(f'<div class="lovable-text" style="padding-top: 10px;">⚡ Power BI</div>', unsafe_allow_html=True)
-
-                # Coluna 4: Status (Sugestão Visual)
-                with c4:
-                    st.markdown(f'<div style="padding-top: 10px; color: #10B981; font-weight:bold; font-size:12px;">🟢 Online</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
-                st.markdown("<hr style='margin: 5px 0; border-top: 1px solid #F1F5F9;'>", unsafe_allow_html=True)
+                # Divisória sutil entre linhas
+                st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
 # --- TELA 3: VIEW ---
 elif st.session_state.page == 'view':
