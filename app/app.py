@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 
 # ==============================================================================
-# 1. CONFIGURAÇÕES DE CAMINHOS
+# 1. CONFIGURAÇÕES
 # ==============================================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 PATH_DATA = BASE_DIR / "data"
@@ -27,7 +27,7 @@ def get_base64(file_path):
     return None
 
 # ==============================================================================
-# 2. FUNÇÕES DE DADOS E LOGS
+# 2. DADOS E LOGS
 # ==============================================================================
 def carregar_dados():
     try:
@@ -36,7 +36,7 @@ def carregar_dados():
         rel = pd.read_excel(PATH_DATA / 'relacional.xlsx')
         return u, r, rel
     except Exception as e:
-        st.error(f"Erro ao acessar base de dados: {e}")
+        st.error(f"Erro ao acessar dados: {e}")
         return None, None, None
 
 def registrar_log(usuario, email, evento):
@@ -55,15 +55,16 @@ def registrar_log(usuario, email, evento):
     except: pass
 
 # ==============================================================================
-# 3. ESTILIZAÇÃO CSS
+# 3. CSS (DESIGN SYSTEM)
 # ==============================================================================
 def apply_styles():
     st.markdown("""
         <style>
             #MainMenu, footer, header {visibility: hidden;}
             .block-container {padding: 0rem !important;}
+            .stApp { background-color: #FFFFFF; }
             
-            /* --- ESTILOS TELA 1 (LOGIN) --- */
+            /* --- TELA 1 (LOGIN) --- */
             .main-title-login {
                 color: #000000 !important; font-size: 58px; font-weight: 800;
                 text-align: center; margin-top: 5vh;
@@ -72,43 +73,39 @@ def apply_styles():
                 color: #000000 !important; font-size: 19px; font-weight: 500; 
                 margin-top: 15px; margin-bottom: 5px; display: block;
             }
-            /* RESTAURADO: Cor original do botão da Tela 1 */
+            /* Botão Vermelho Restaurado (#ED3237) */
             .btn-acessar button {
-                background-color: #1e3a8a !important; color: white !important;
+                background-color: #ED3237 !important; color: white !important;
                 height: 55px !important; font-size: 20px !important; font-weight: bold !important;
                 border-radius: 10px !important; border: none !important; margin-top: 20px;
             }
             .empresa-logo { position: absolute; top: 15px; right: 35px; z-index: 999; }
 
-            /* --- ESTILOS TELA 2 (MENU LOVABLE) --- */
-            .stApp { background-color: #FFFFFF; }
-            
-            .report-card-lovable {
-                background: white;
-                padding: 24px;
-                border-radius: 16px;
-                border: 1px solid #E2E8F0;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-                transition: all 0.3s ease;
-                text-align: center;
-                margin-bottom: 10px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
-            .report-card-lovable:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                border-color: #1e3a8a;
-            }
-            
-            /* Botão Sair Customizado (F0F2F6 e Texto Preto) */
+            /* --- TELA 2 (LISTA LOVABLE) --- */
+            /* Botão Sair */
             div[data-testid="stBaseButton-secondary"] {
-                background-color: #F0F2F6 !important;
-                color: #000000 !important;
-                border: none !important;
-                border-radius: 8px !important;
+                background-color: #F1F5F9 !important; color: #0F172A !important;
+                border: 1px solid #E2E8F0 !important; border-radius: 6px !important;
+            }
+            
+            /* Cabeçalho da Tabela */
+            .lovable-header {
+                font-size: 14px; font-weight: 600; color: #64748B;
+                padding-bottom: 10px; border-bottom: 1px solid #E2E8F0;
+                margin-bottom: 10px;
+            }
+            
+            /* Linhas da Tabela */
+            .lovable-row {
+                padding: 15px 0; border-bottom: 1px solid #F1F5F9;
+                display: flex; align-items: center; transition: 0.2s;
+            }
+            .lovable-text { color: #334155; font-size: 15px; font-weight: 500; }
+            .lovable-sub { color: #64748B; font-size: 14px; }
+            
+            /* Botão Link (Nome do Relatório) */
+            .stButton button {
+                text-align: left; padding-left: 0;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -116,14 +113,13 @@ def apply_styles():
 apply_styles()
 
 # ==============================================================================
-# 4. LÓGICA DE TELAS
+# 4. LÓGICA DE NAVEGAÇÃO
 # ==============================================================================
 
 # --- TELA 1: LOGIN ---
 if st.session_state.page == 'login':
     emp_base = get_base64(PATH_IMG / "empresa1.jpg")
     if emp_base:
-        # Reduzida mais 20% conforme pedido anterior
         st.markdown(f'<div class="empresa-logo"><img src="data:image/jpg;base64,{emp_base}" width="110"></div>', unsafe_allow_html=True)
 
     st.markdown('<h1 class="main-title-login">Portal CIG 360º | GIROAgro</h1>', unsafe_allow_html=True)
@@ -157,49 +153,69 @@ if st.session_state.page == 'login':
                     st.error("Credenciais inválidas.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-# --- TELA 2: MENU (LISTA LOVABLE) ---
+# --- TELA 2: LISTA DE RELATÓRIOS (ESTILO LOVABLE) ---
 elif st.session_state.page == 'menu':
-    col_welcome, col_exit = st.columns([6, 1])
-    with col_welcome:
-        st.markdown(f"<h2 style='color: #1E293B; padding-left: 20px;'>Olá, {st.session_state.user_info['nome']}</h2>", unsafe_allow_html=True)
-    with col_exit:
-        if st.button("Sair", use_container_width=True):
-            st.session_state.clear()
-            st.rerun()
+    # Barra de Boas-vindas
+    c1, c2 = st.columns([6, 1])
+    c1.markdown(f"<h2 style='color: #0F172A; margin:0;'>Olá, {st.session_state.user_info['nome']}</h2>", unsafe_allow_html=True)
+    if c2.button("Sair", key="logout_btn", use_container_width=True):
+        st.session_state.clear()
+        st.rerun()
 
-    st.write("---")
-    _, col_content, _ = st.columns([0.1, 5, 0.1])
+    st.write("##")
     
-    with col_content:
-        st.markdown("#### 📂 Selecione seu relatório abaixo:")
-        df_u, df_r, df_rel = carregar_dados()
-        
-        if df_rel is not None:
-            meus_ids = df_rel[df_rel['usuario_id'] == st.session_state.user_info['usuario_id']]
-            meus_relatorios = pd.merge(meus_ids[['relatorio_id']], df_r, on='relatorio_id', how='inner')
-            
-            grid_cols = st.columns(3)
-            for i, (_, row) in enumerate(meus_relatorios.iterrows()):
-                with grid_cols[i % 3]:
-                    st.markdown(f"""
-                        <div class="report-card-lovable">
-                            <div style="color: #64748B; font-size: 12px; font-weight: 600;">{row['categoria'].upper()}</div>
-                            <div style="color: #1E293B; font-size: 18px; font-weight: 700; margin: 10px 0;">📊 {row['nome_relatorio']}</div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    if st.button("Abrir Painel", key=f"btn_{row['relatorio_id']}", use_container_width=True):
+    # Cabeçalho da Tabela (Estilo Lovable Image)
+    # Colunas: Nome (4) | Departamento (2) | Plataforma (2) | Status (1)
+    with st.container():
+        h1, h2, h3, h4 = st.columns([4, 2, 2, 1])
+        h1.markdown('<div class="lovable-header">PAINEL / RELATÓRIO</div>', unsafe_allow_html=True)
+        h2.markdown('<div class="lovable-header">DEPARTAMENTO</div>', unsafe_allow_html=True)
+        h3.markdown('<div class="lovable-header">PLATAFORMA</div>', unsafe_allow_html=True)
+        h4.markdown('<div class="lovable-header">STATUS</div>', unsafe_allow_html=True) # 4ª Coluna Sugerida
+
+    # Conteúdo da Lista
+    df_u, df_r, df_rel = carregar_dados()
+    if df_rel is not None:
+        meus_ids = df_rel[df_rel['usuario_id'] == st.session_state.user_info['usuario_id']]
+        meus_relatorios = pd.merge(meus_ids[['relatorio_id']], df_r, on='relatorio_id', how='inner')
+
+        for i, (_, row) in enumerate(meus_relatorios.iterrows()):
+            with st.container():
+                # Fundo alternado para efeito visual (opcional)
+                bg_style = "background-color: #F8FAFC;" if i % 2 == 0 else "background-color: #FFFFFF;"
+                
+                c1, c2, c3, c4 = st.columns([4, 2, 2, 1])
+                
+                # Coluna 1: Botão Link (Nome) - Ação Principal
+                with c1:
+                    # Usamos um botão transparente que parece texto para ser clicável
+                    if st.button(f"📊 {row['nome_relatorio']}", key=f"lnk_{row['relatorio_id']}"):
                         st.session_state.report_url = row['link']
                         st.session_state.report_name = row['nome_relatorio']
                         st.session_state.page = 'view'
                         st.rerun()
 
-# --- TELA 3: VIEW (DASHBOARD) ---
+                # Coluna 2: Categoria/Departamento
+                with c2:
+                    st.markdown(f'<div class="lovable-sub" style="padding-top: 10px;">{row["categoria"]}</div>', unsafe_allow_html=True)
+
+                # Coluna 3: Plataforma (Power BI fixo ou vindo do excel se tiver coluna)
+                with c3:
+                    st.markdown(f'<div class="lovable-text" style="padding-top: 10px;">⚡ Power BI</div>', unsafe_allow_html=True)
+
+                # Coluna 4: Status (Sugestão Visual)
+                with c4:
+                    st.markdown(f'<div style="padding-top: 10px; color: #10B981; font-weight:bold; font-size:12px;">🟢 Online</div>', unsafe_allow_html=True)
+                
+                st.markdown("<hr style='margin: 5px 0; border-top: 1px solid #F1F5F9;'>", unsafe_allow_html=True)
+
+# --- TELA 3: VIEW ---
 elif st.session_state.page == 'view':
     c_back, c_title, c_exit = st.columns([1, 8, 1])
     if c_back.button("⬅️ Voltar"):
         st.session_state.page = 'menu'
         st.rerun()
-    c_title.markdown(f"<h4 style='text-align: center;'>{st.session_state.report_name}</h4>", unsafe_allow_html=True)
+    c_title.markdown(f"<h4 style='text-align: center; color: #0F172A;'>{st.session_state.report_name}</h4>", unsafe_allow_html=True)
     if c_exit.button("Sair"):
         st.session_state.clear()
         st.rerun()
